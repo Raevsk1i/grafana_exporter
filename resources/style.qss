@@ -1,0 +1,120 @@
+/* Общий стиль окна */
+QWidget {
+    background-color: #212529;
+    color: #f8f9fa;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 10pt;
+}
+
+QLabel {
+    color: #ced4da;
+    font-size: 12pt;
+    font-weight: 500;
+}
+
+/* Поля ввода */
+QLineEdit, QComboBox {
+    padding: 10px 12px;
+    border: 2px solid #495057;
+    border-radius: 8px;
+    background-color: #343a40;
+    color: #f8f9fa;
+    min-height: 24px;
+}
+
+QLineEdit:hover, QComboBox:hover {
+    border-color: #660066;
+    outline: none;
+}
+
+QLineEdit:focus, QComboBox:focus {
+    border-color: #660066;
+    outline: none;
+}
+
+QLineEdit:disabled, QComboBox:disabled {
+    background-color: #2d3338;
+    color: #6c757d;
+}
+
+/* Дата и время */
+QDateTimeEdit {
+    padding: 10px 12px;
+    border: 2px solid #495057;
+    border-radius: 8px;
+    background-color: #343a40;
+    color: #f8f9fa;
+}
+
+QDateTimeEdit:focus {
+    border-color: #28a745;
+}
+
+QDateTimeEdit:disabled {
+    background-color: #2d3338;
+    color: #6c757d;
+}
+
+/* Комбобокс стрелка */
+QComboBox::drop-down {
+    width: 30px;
+    border-left: 1px solid #495057;
+}
+
+QComboBox::down-arrow {
+    image: url(resources/down-arrow.png); /* опционально: можно добавить иконку */
+}
+
+/* Переключатель (Switch) Параметр 8: Режим — Добавить / Создать */
+AnimatedToggle#modeSwitch::indicator {
+    width: 54px;
+    height: 28px;
+}
+
+/* Галочка для музыки Параметр 9: Фоновая музыка */
+QCheckBox {
+    spacing: 10px;
+    font-size: 11pt;
+}
+
+/* Кнопка запуска */
+QPushButton#runButton {
+    background-color: #660066;
+    color: white;
+    font-weight: bold;
+    padding: 16px 40px;
+    border: none;
+    border-radius: 12px;
+    min-width: 220px;
+    font-size: 14pt;
+    margin-top: 20px;
+}
+
+QPushButton#runButton:hover {
+    background-color: #531a50;
+}
+
+QPushButton#runButton:pressed {
+    background-color: #531a50;
+}
+
+QPushButton#runButton:disabled {
+    background-color: #495057;
+    color: #6c757d;
+}
+
+/* Прогресс бар */
+QProgressBar {
+    background-color: #343a40;
+    border: 2px solid #495057;
+    border-radius: 8px;
+    text-align: center;
+    color: #f8f9fa;
+    height: 20px;
+}
+
+QProgressBar::chunk {
+    background-color: #330033;
+    border-radius: 6px;
+
+}

@@ -1,0 +1,12 @@
+grafana:
+  url: "https://grafana.example.com"
+  api_key: "api_key"
+  dashboards:
+    cpu: "cpu-dashboard-uid"
+    memory: "memory-dashboard-uid"
+
+confluence:
+  url: "https://confluence.example.com"
+  username: "${CONFLUENCE_USER}"
+  api_token: "${CONFLUENCE_TOKEN}"
+  space: "DEV"
