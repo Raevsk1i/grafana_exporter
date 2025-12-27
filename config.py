@@ -24,7 +24,7 @@ class ConfigManager(QObject):
             "Confluence_api_key": "",
             "Confluence_param8": "",
             "Confluence_param9": "",
-            "Confluence_param10": "",
+            "reflex_transfer_url": "https://api.example.com/reflex-transfer",
         }
 
         # Загружаем значения из QSettings или используем дефолтные

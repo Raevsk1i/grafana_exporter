@@ -1,6 +1,8 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QWidget, QPushButton
 
+from service.reflex_transfer_service import reflex_service
+
 
 class ReflexTransferScreen(QWidget):
     def __init__(self, parent=None):

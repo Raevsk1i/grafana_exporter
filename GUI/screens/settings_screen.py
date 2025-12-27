@@ -33,7 +33,7 @@ class SettingsScreen(QWidget):
             "Confluence_api_key": "Confluence API Token",
             "Confluence_param8": "Доп. параметр Confluence 1",
             "Confluence_param9": "Доп. параметр Confluence 2",
-            "Confluence_param10": "Доп. параметр Confluence 3",
+            "reflex_transfer_url": "Reflex Transfer URL",
         }
 
         form_layout = QFormLayout()
