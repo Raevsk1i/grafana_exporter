@@ -1,33 +1,166 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QWidget, QPushButton
+from PyQt6.QtCore import Qt, QThreadPool, QDateTime
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QWidget, QPushButton, QMessageBox, QGridLayout, \
+    QInputDialog, QLineEdit, QDialogButtonBox, QTextEdit, QDialog, QFormLayout, QDateTimeEdit
 
+import json
+from config import config
 from service.reflex_transfer_service import reflex_service
+from workers.reflex_worker import ReflexWorker
+
+
+# --- Диалог для показа JSON-ответа ---
+class JsonResponseDialog(QDialog):
+    def __init__(self, title: str, response: dict, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.resize(800, 600)
+
+        layout = QVBoxLayout(self)
+
+        text_edit = QTextEdit()
+        text_edit.setReadOnly(True)
+        text_edit.setFont(QFont("Consolas", 11))
+
+        try:
+            pretty_json = json.dumps(response, indent=2, ensure_ascii=False)
+        except:
+            pretty_json = str(response)
+
+        text_edit.setPlainText(pretty_json)
+        layout.addWidget(text_edit)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        buttons.accepted.connect(self.accept)
+        layout.addWidget(buttons)
+
+
+# --- Диалог для "Трансфер From-To" с QDateTimeEdit ---
+class TransferFromToDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Трансфер From-To")
+        self.resize(400, 250)
+
+        layout = QFormLayout(self)
+
+        self.fp_code_edit = QLineEdit()
+        self.fp_code_edit.setPlaceholderText("VAT, BUDGET и т.д.")
+
+        self.from_dt = QDateTimeEdit()
+        self.from_dt.setCalendarPopup(True)
+        self.from_dt.setDisplayFormat("dd.MM.yyyy HH:mm")
+        self.from_dt.setDateTime(QDateTime.currentDateTime().addDays(-7))
+
+        self.to_dt = QDateTimeEdit()
+        self.to_dt.setCalendarPopup(True)
+        self.to_dt.setDisplayFormat("dd.MM.yyyy HH:mm")
+        self.to_dt.setDateTime(QDateTime.currentDateTime())
+
+        layout.addRow("КОД ФП:", self.fp_code_edit)
+        layout.addRow("From:", self.from_dt)
+        layout.addRow("To:", self.to_dt)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addRow(buttons)
+
+    def get_values(self):
+        fp_code = self.fp_code_edit.text().strip()
+        from_str = self.from_dt.dateTime().toString("dd.MM.yyyy HH:mm")
+        to_str = self.to_dt.dateTime().toString("dd.MM.yyyy HH:mm")
+        return fp_code, from_str, to_str
 
 
 class ReflexTransferScreen(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_window = parent
+        self.threadpool = QThreadPool()
+        self.buttons = {}
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(40, 40, 40, 40)
-        layout.setSpacing(20)
+        self.build_ui()
+
+        if not config.reflex_transfer_url.strip():
+            self.prompt_for_url()
+        else:
+            self.enable_action_buttons()
+
+    def build_ui(self):
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(40, 40, 40, 40)
+        main_layout.setSpacing(30)
 
         # Заголовок
-        title = QLabel("Reflex-transfer")
+        title = QLabel("Reflex Transfer")
         title.setObjectName("screenTitle")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title)
+        main_layout.addWidget(title)
 
-        # Основной текст
-        info = QLabel("<p style='font-size: 14pt; color: #bbbbbb;'>Функционал в разработке...</p>")
-        info.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        info.setWordWrap(True)
-        layout.addWidget(info)
+        # === Группа REFLEX ===
+        reflex_group = QLabel("<b>REFLEX</b>")
+        reflex_group.setStyleSheet("font-size: 16pt; color: #9333ea;")
+        reflex_group.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(reflex_group)
 
-        layout.addStretch()
+        reflex_grid = QGridLayout()
+        reflex_grid.setSpacing(15)
 
-        # Нижняя панель с кнопкой Назад в правом углу
+        reflex_buttons = [
+            ("Создать трансфер", self.create_transfer_action),
+            ("Трансфер From-To", self.transfer_from_to_action),
+            ("Получить все активные трансферы", self.get_all_transfers_action),
+        ]
+
+        for i, (text, callback) in enumerate(reflex_buttons):
+            btn = QPushButton(text)
+            btn.setObjectName("reflexActionButton")
+            btn.setFixedHeight(60)
+            btn.setFont(QFont("", 12, QFont.Weight.Bold))
+            btn.clicked.connect(callback)
+            self.buttons[text] = btn if hasattr(self, 'buttons') else {}
+            self.buttons.setdefault(text, btn)
+            reflex_grid.addWidget(btn, i // 2, i % 2)
+
+        reflex_wrapper = QHBoxLayout()
+        reflex_wrapper.addStretch()
+        reflex_wrapper.addLayout(reflex_grid)
+        reflex_wrapper.addStretch()
+        main_layout.addLayout(reflex_wrapper)
+
+        # === Группа INFLUX ===
+        influx_group = QLabel("<b>INFLUX</b>")
+        influx_group.setStyleSheet("font-size: 16pt; color: #9333ea;")
+        influx_group.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(influx_group)
+
+        influx_grid = QGridLayout()
+        influx_grid.setSpacing(15)
+
+        influx_buttons = [
+            ("Удалить инстансы ФП", self.delete_instances_action),
+            ("Пересоздать базу данных", self.recreate_db_action),
+        ]
+
+        for i, (text, callback) in enumerate(influx_buttons):
+            btn = QPushButton(text)
+            btn.setObjectName("reflexActionButton")
+            btn.setFixedHeight(60)
+            btn.setFont(QFont("", 12, QFont.Weight.Bold))
+            btn.clicked.connect(callback)
+            self.buttons[text] = btn
+            influx_grid.addWidget(btn, i // 2, i % 2)
+
+        influx_wrapper = QHBoxLayout()
+        influx_wrapper.addStretch()
+        influx_wrapper.addLayout(influx_grid)
+        influx_wrapper.addStretch()
+        main_layout.addLayout(influx_wrapper)
+
+        main_layout.addStretch()
+
+        # Кнопка Назад
         bottom_bar = QHBoxLayout()
         bottom_bar.addStretch()
 
@@ -37,7 +170,101 @@ class ReflexTransferScreen(QWidget):
         back_button.clicked.connect(self.go_back)
         bottom_bar.addWidget(back_button)
 
-        layout.addLayout(bottom_bar)
+        main_layout.addLayout(bottom_bar)
+        main_layout.addSpacing(20)
+
+    def prompt_for_url(self):
+        self.disable_action_buttons()
+        self.status_label.setText("<span style='color: #ff6b6b;'>URL не указан. Введите его:</span>")
+
+        url, ok = QInputDialog.getText(
+            self, "Настройка", "Базовый URL Reflex Transfer API:",
+            QLineEdit.EchoMode.Normal, config.reflex_transfer_url.strip() or "https://"
+        )
+
+        if ok and url.strip():
+            config.set_value("reflex_transfer_url", url.strip())
+            QMessageBox.information(self, "Готово", "URL сохранён.")
+            self.status_label.setText("Выберите действие")
+            self.enable_action_buttons()
+        elif ok:
+            QMessageBox.warning(self, "Ошибка", "URL обязателен!")
+            self.prompt_for_url()
+        else:
+            self.go_back()
+
+    def enable_action_buttons(self):
+        for btn in self.buttons.values():
+            btn.setEnabled(True)
+
+    def disable_action_buttons(self):
+        for btn in self.buttons.values():
+            btn.setEnabled(False)
+
+    def run_action(self, func, action_name: str, *args, **kwargs):
+        self.disable_action_buttons()
+        self.status_label.setText(f"Выполняется: {action_name}...")
+
+        worker = ReflexWorker(func, action_name, *args, **kwargs)
+        worker.signals.success.connect(self.on_success)
+        worker.signals.error.connect(self.on_error)
+        self.threadpool.start(worker)
+
+    def on_success(self, action_name: str, response: dict):
+        self.enable_action_buttons()
+        self.status_label.setText("Выберите действие")
+
+        if action_name == "Получить все активные трансферы":
+            JsonResponseDialog("Активные трансферы", response, self).exec()
+        else:
+            QMessageBox.information(
+                self, "Успех",
+                f"<b>{action_name}</b><br><br>Успешно выполнено.<br><pre>{json.dumps(response, indent=2, ensure_ascii=False)}</pre>"
+            )
+
+    def on_error(self, action_name: str, error_msg: str):
+        self.enable_action_buttons()
+        self.status_label.setText("Выберите действие")
+        QMessageBox.critical(self, "Ошибка", f"<b>{action_name}</b><br><br>{error_msg}")
+
+    # === Действия ===
+    def create_transfer_action(self):
+        fp_code, ok = QInputDialog.getText(self, "Создать трансфер", "Введите КОД ФП:")
+        if ok and fp_code.strip():
+            self.run_action(reflex_service.send_custom_event, "Создать трансфер", "create_transfer", {"fp_code": fp_code.strip()})
+        elif ok:
+            QMessageBox.warning(self, "Ошибка", "Код ФП обязателен")
+
+    def transfer_from_to_action(self):
+        dialog = TransferFromToDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            fp_code, from_str, to_str = dialog.get_values()
+            if not fp_code:
+                QMessageBox.warning(self, "Ошибка", "Код ФП обязателен")
+                return
+            self.run_action(
+                reflex_service.send_custom_event,
+                "Трансфер From-To",
+                "transfer_period",
+                {"fp_code": fp_code, "from": from_str, "to": to_str}
+            )
+
+    def get_all_transfers_action(self):
+        self.run_action(reflex_service.send_custom_event, "Получить все активные трансферы", "get_active_transfers", {})
+
+    def delete_instances_action(self):
+        fp_code, ok = QInputDialog.getText(self, "Удалить инстансы ФП", "Введите КОД ФП:")
+        if ok and fp_code.strip():
+            reply = QMessageBox.question(self, "Подтверждение", f"Удалить инстансы для {fp_code}?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if reply == QMessageBox.StandardButton.Yes:
+                self.run_action(reflex_service.send_custom_event, "Удалить инстансы ФП", "delete_instances", {"fp_code": fp_code.strip()})
+        elif ok:
+            QMessageBox.warning(self, "Ошибка", "Код ФП обязателен")
+
+    def recreate_db_action(self):
+        reply = QMessageBox.question(self, "Подтверждение", "Пересоздать базу данных?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            self.run_action(reflex_service.send_custom_event, "Пересоздать базу данных", "recreate_database", {})
 
     def go_back(self):
         if self.parent_window:

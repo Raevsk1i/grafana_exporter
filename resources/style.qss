@@ -256,3 +256,28 @@ QLabel#screenTitle {
     color: #9333ea;
     margin: 10px;
 }
+
+/* Кнопки действий в Reflex Transfer */
+QPushButton#reflexActionButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #7e22ce, stop:1 #9333ea);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 14pt;
+}
+
+QPushButton#reflexActionButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #9333ea, stop:1 #a855f7);
+}
+
+QPushButton#reflexActionButton:pressed {
+    background: #6b21a8;
+}
+
+QPushButton#reflexActionButton:disabled {
+    background-color: #404040;
+    color: #6c757d;
+}

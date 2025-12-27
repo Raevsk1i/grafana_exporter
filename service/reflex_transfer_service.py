@@ -20,9 +20,6 @@ class ReflexTransferService:
     def __init__(self):
         self.base_url = config.reflex_transfer_url.strip().rstrip("/")
 
-        if not self.base_url:
-            raise ValueError("Reflex Transfer URL не указан в настройках!")
-
         # Общие заголовки (можно расширить)
         self.headers = {
             "Content-Type": "application/json",
