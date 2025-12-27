@@ -1,3 +1,6 @@
+
+# Useless because we have QSettings
+
 grafana:
   url: "https://grafana.example.com"
   api_key: "api_key"
