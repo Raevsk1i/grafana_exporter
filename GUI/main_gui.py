@@ -81,8 +81,8 @@ class MainWindow(QMainWindow):
         # Параметр 9: Режим — Добавить / Создать
         self.mode_switch = AnimatedToggle(
             self,
-            bar_color_true="#660066",  # зелёный, как в вашем стиле
-            bar_color_false="#495057",  # серый фон
+            bar_color_true="#9333ea",
+            bar_color_false="#495057",
             handle_color="#ffffff",
             animation_duration=150,
             animation_curve="OutCubic",

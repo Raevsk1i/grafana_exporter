@@ -1,85 +1,111 @@
-/* Общий стиль окна */
 QWidget {
-    background-color: #212529;
-    color: #f8f9fa;
+    background-color: #121212;
+    color: #e0e0e0;
     font-family: "Segoe UI", Arial, sans-serif;
     font-size: 10pt;
 }
 
 QLabel {
-    color: #ced4da;
+    color: #bbbbbb;
     font-size: 12pt;
     font-weight: 500;
 }
 
-/* Поля ввода */
-QLineEdit, QComboBox {
+/* Поля ввода и комбобоксы */
+QLineEdit, QComboBox, QDateTimeEdit, QSpinBox, QDoubleSpinBox {
     padding: 10px 12px;
-    border: 2px solid #495057;
+    border: 1px solid #404040;
     border-radius: 8px;
-    background-color: #343a40;
-    color: #f8f9fa;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
     min-height: 24px;
+    selection-background-color: #9333ea;
 }
 
-QLineEdit:hover, QComboBox:hover {
-    border-color: #660066;
-    outline: none;
+QLineEdit:hover, QComboBox:hover, QDateTimeEdit:hover {
+    border-color: #9333ea;
 }
 
-QLineEdit:focus, QComboBox:focus {
-    border-color: #660066;
-    outline: none;
+QLineEdit:focus, QComboBox:focus, QDateTimeEdit:focus {
+    border: 2px solid #9333ea;
+    padding: 9px 11px; /* компенсируем увеличение border */
 }
 
 QLineEdit:disabled, QComboBox:disabled {
-    background-color: #2d3338;
+    background-color: #2d2d2d;
     color: #6c757d;
+    border-color: #404040;
 }
 
-/* Дата и время */
-QDateTimeEdit {
-    padding: 10px 12px;
-    border: 2px solid #495057;
-    border-radius: 8px;
-    background-color: #343a40;
-    color: #f8f9fa;
-}
-
-QDateTimeEdit:focus {
-    border-color: #28a745;
-}
-
-QDateTimeEdit:disabled {
-    background-color: #2d3338;
-    color: #6c757d;
-}
-
-/* Комбобокс стрелка */
+/* Стрелка комбобокса */
 QComboBox::drop-down {
     width: 30px;
-    border-left: 1px solid #495057;
+    border-left: 1px solid #404040;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 QComboBox::down-arrow {
-    image: url(resources/down-arrow.png); /* опционально: можно добавить иконку */
+    image: url(:/icons/down-arrow-white.png); /* опционально: белая стрелка */
+    width: 12px;
+    height: 12px;
 }
 
-/* Переключатель (Switch) Параметр 9: Режим — Добавить / Создать */
-AnimatedToggle#modeSwitch::indicator {
-    width: 54px;
-    height: 28px;
-}
+/* Переключатель animatedToggle (Switch) Параметр 9: Режим — Добавить / Создать */
+/* Стилизуется в своем классе */
 
-/* Галочка для музыки Параметр 10: Фоновая музыка */
+/* Чекбоксы */
 QCheckBox {
     spacing: 10px;
     font-size: 11pt;
 }
 
-/* Кнопка запуска */
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid #404040;
+    background-color: #1e1e1e;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #9333ea;
+    image: url(:/icons/check-white.png); /* опционально: галочка */
+    border-color: #9333ea;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #9333ea;
+}
+
+/* Кнопки */
+QPushButton {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #383838;
+    border-color: #9333ea;
+}
+
+QPushButton:pressed {
+    background-color: #242424;
+}
+
+QPushButton:disabled {
+    background-color: #2d2d2d;
+    color: #6c757d;
+}
+
+/* Основная кнопка запуска */
 QPushButton#runButton {
-    background-color: #660066;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #a855f7, stop:1 #9333ea);
     color: white;
     font-weight: bold;
     padding: 16px 40px;
@@ -88,33 +114,59 @@ QPushButton#runButton {
     min-width: 220px;
     font-size: 14pt;
     margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 QPushButton#runButton:hover {
-    background-color: #531a50;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #b975ff, stop:1 #a855f7);
 }
 
 QPushButton#runButton:pressed {
-    background-color: #531a50;
+    background: #9333ea;
 }
 
 QPushButton#runButton:disabled {
-    background-color: #495057;
+    background-color: #404040;
     color: #6c757d;
 }
 
-/* Прогресс бар */
+/* Прогресс-бар */
 QProgressBar {
-    background-color: #343a40;
-    border: 2px solid #495057;
+    background-color: #1e1e1e;
+    border: 1px solid #404040;
     border-radius: 8px;
     text-align: center;
-    color: #f8f9fa;
-    height: 20px;
+    color: #e0e0e0;
+    height: 24px;
+    font-weight: bold;
 }
 
 QProgressBar::chunk {
-    background-color: #330033;
-    border-radius: 6px;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                stop:0 #9333ea, stop:1 #c084fc);
+    border-radius: 7px;
+}
 
+/* Дополнительные полезные стили */
+QScrollArea {
+    background-color: transparent;
+    border: none;
+}
+
+QToolTip {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+    border-radius: 6px;
+    padding: 6px;
+}
+
+QMenuBar, QMenu {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+QMenu::item:selected {
+    background-color: #9333ea;
 }
