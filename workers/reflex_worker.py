@@ -3,6 +3,7 @@ import time
 from PyQt6.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal
 
 
+# Бедный работяга
 class ReflexWorker(QRunnable):
     def __init__(self, func, action_name: str, *args, **kwargs):
         super().__init__()
@@ -15,7 +16,7 @@ class ReflexWorker(QRunnable):
     @pyqtSlot()
     def run(self):
         try:
-            time.sleep(5)
+            time.sleep(5) # эмуляция времени ожидания
             response = self.func(*self.args, **self.kwargs)
             self.signals.success.emit(self.action_name, response)
         except Exception as e:

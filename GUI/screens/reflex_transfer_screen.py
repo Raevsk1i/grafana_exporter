@@ -72,7 +72,7 @@ class TransferFromToDialog(QDialog):
         to_str = self.to_dt.dateTime().toString("dd.MM.yyyy HH:mm")
         return fp_code, from_str, to_str
 
-
+# Screen с кнопками для взаимодействия с приложением reflex-transfer
 class ReflexTransferScreen(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -93,6 +93,7 @@ class ReflexTransferScreen(QWidget):
         else:
             self.enable_action_buttons()
 
+    # Собрать UI
     def build_ui(self):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(40, 40, 40, 40)
@@ -185,6 +186,7 @@ class ReflexTransferScreen(QWidget):
         main_layout.addLayout(bottom_bar)
         main_layout.addSpacing(20)
 
+    # Выскакивает в случае, когда reflex_url не указан
     def prompt_for_url(self):
         self.loading_timer.stop()  # На всякий случай
         self.disable_action_buttons()
@@ -206,19 +208,23 @@ class ReflexTransferScreen(QWidget):
         else:
             self.go_back()
 
+    # Включает кнопки
     def enable_action_buttons(self):
         for btn in self.buttons.values():
             btn.setEnabled(True)
 
+    # Отключает кнопки
     def disable_action_buttons(self):
         for btn in self.buttons.values():
             btn.setEnabled(False)
 
+    # Служит для имитации прогресса после нажатия на кнопку
     def update_loading_dots(self):
         self.dot_count = (self.dot_count + 1) % 4  # 0, 1, 2, 3 → "", ".", "..", "..."
         dots = "." * self.dot_count
         self.status_label.setText(f"Выполняется: {self.current_action_name}{dots}")
 
+    # Запускает основную логику и делит на поток
     def run_action(self, func, action_name: str, *args, **kwargs):
         self.disable_action_buttons()
 
@@ -233,6 +239,7 @@ class ReflexTransferScreen(QWidget):
         worker.signals.error.connect(self.on_error)
         self.threadpool.start(worker)
 
+    # В случае отправки запроса
     def on_success(self, action_name: str, response: dict):
         self.loading_timer.stop()  # Останавливаем точки
         self.enable_action_buttons()
@@ -246,13 +253,14 @@ class ReflexTransferScreen(QWidget):
                 f"<b>{action_name}</b><br><br>Успешно выполнено.<br><pre>{json.dumps(response, indent=2, ensure_ascii=False)}</pre>"
             )
 
+    # В случае какой-то ошибки во время попытки отправить запрос
     def on_error(self, action_name: str, error_msg: str):
         self.loading_timer.stop()  # Останавливаем точки
         self.enable_action_buttons()
         self.status_label.setText("Выберите действие")
         QMessageBox.critical(self, "Ошибка", f"<b>{action_name}</b><br><br>{error_msg}")
 
-    # === Действия ===
+    # === Методы сервиса reflex_transfer_service === Требуется изменить для правильной работы
     def create_transfer_action(self):
         fp_code, ok = QInputDialog.getText(self, "Создать трансфер", "Введите КОД ФП:")
         if ok and fp_code.strip():
@@ -291,6 +299,7 @@ class ReflexTransferScreen(QWidget):
         if reply == QMessageBox.StandardButton.Yes:
             self.run_action(reflex_service.send_custom_event, "Пересоздать базу данных", "recreate_database", {})
 
+    # Возврат на главное меню
     def go_back(self):
         if self.parent_window:
             self.parent_window.stacked_widget.setCurrentIndex(0)

@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt
 from config import config  # Импортируем глобальный config
 
 
+# Окно с настройками констант, которые шарятся на все приложение
 class SettingsScreen(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -22,7 +23,7 @@ class SettingsScreen(QWidget):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
-        # Список параметров с осмысленными названиями
+        # Список параметров-констант названиями
         self.param_fields = {
             "Grafana_host": "Grafana Host",
             "Grafana_port": "Grafana Port",
@@ -61,7 +62,7 @@ class SettingsScreen(QWidget):
 
         layout.addLayout(form_layout)
 
-        # Кнопка сброса
+        # Кнопка сброса: Сбрасывает все параметры
         reset_button = QPushButton("Сбросить все настройки")
         reset_button.setObjectName("resetButton")
         reset_button.clicked.connect(self.reset_all_settings)
