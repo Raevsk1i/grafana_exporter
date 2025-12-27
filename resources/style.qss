@@ -65,13 +65,13 @@ QComboBox::down-arrow {
     image: url(resources/down-arrow.png); /* опционально: можно добавить иконку */
 }
 
-/* Переключатель (Switch) Параметр 8: Режим — Добавить / Создать */
+/* Переключатель (Switch) Параметр 9: Режим — Добавить / Создать */
 AnimatedToggle#modeSwitch::indicator {
     width: 54px;
     height: 28px;
 }
 
-/* Галочка для музыки Параметр 9: Фоновая музыка */
+/* Галочка для музыки Параметр 10: Фоновая музыка */
 QCheckBox {
     spacing: 10px;
     font-size: 11pt;

@@ -39,41 +39,46 @@ class MainWindow(QMainWindow):
         self.fp_combo.addItems(["VAT", "DZKZ", "BUDGET", "GLA"])
         form_layout.addRow("Код ФП:", self.fp_combo)
 
-        # Параметр 2: Page ID
+        # Параметр 2: Название теста
+        self.test_name = QComboBox()
+        self.test_name.addItems(["Поиск максимума", "Подтверждение максимума", "Стабильность"])
+        form_layout.addRow("Тест:", self.test_name)
+
+        # Параметр 3: Page ID
         self.page_id_edit = QLineEdit()
-        self.page_id_edit.setPlaceholderText("Только цифры")
+        self.page_id_edit.setPlaceholderText("123456789")
         form_layout.addRow("Page ID:", self.page_id_edit)
 
-        # Параметр 3: Page Name
+        # Параметр 4: Page Name
         self.page_name_edit = QLineEdit()
         self.page_name_edit.setPlaceholderText("Название страницы")
         form_layout.addRow("Page Name:", self.page_name_edit)
 
-        # Параметр 4: From
+        # Параметр 5: From
         self.from_datetime = QDateTimeEdit()
         self.from_datetime.setDisplayFormat("dd.MM.yyyy HH:mm")
         self.from_datetime.setCalendarPopup(True)
         self.from_datetime.setDateTime(QDateTime.currentDateTime().addDays(-7))
         form_layout.addRow("From:", self.from_datetime)
 
-        # Параметр 5: To
+        # Параметр 6: To
         self.to_datetime = QDateTimeEdit()
         self.to_datetime.setDisplayFormat("dd.MM.yyyy HH:mm")
         self.to_datetime.setCalendarPopup(True)
         self.to_datetime.setDateTime(QDateTime.currentDateTime())
         form_layout.addRow("To:", self.to_datetime)
 
-        # Параметр 6: Пространство Confluence
+        # Параметр 7: Пространство Confluence
         self.space_edit = QLineEdit()
         self.space_edit.setPlaceholderText("SBERERP")
         form_layout.addRow("Пространство Confluence:", self.space_edit)
 
-        # Параметр 7: Parent Page ID
+        # Параметр 8: Parent Page ID
         self.parent_id_edit = QLineEdit()
-        self.parent_id_edit.setPlaceholderText("Только цифры")
+        self.parent_id_edit.setPlaceholderText("123456789")
         form_layout.addRow("Parent Page ID:", self.parent_id_edit)
 
-        # Параметр 8: Режим — Добавить / Создать
+        # Параметр 9: Режим — Добавить / Создать
         self.mode_switch = AnimatedToggle(
             self,
             bar_color_true="#660066",  # зелёный, как в вашем стиле
@@ -87,7 +92,7 @@ class MainWindow(QMainWindow):
         self.mode_switch.stateChanged.connect(self.on_mode_changed)
         form_layout.addRow("Append mode:", self.mode_switch)
 
-        # Параметр 9: Фоновая музыка
+        # Параметр 10: Фоновая музыка
         self.music_checkbox = QCheckBox("Включить фоновую музыку")
         form_layout.addRow("", self.music_checkbox)  # пустая метка для выравнивания
 
