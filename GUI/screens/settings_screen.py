@@ -31,7 +31,7 @@ class SettingsScreen(QWidget):
             "Grafana_param5": "Доп. параметр Grafana",
             "Confluence_url": "Confluence URL",
             "Confluence_api_key": "Confluence API Token",
-            "Confluence_param8": "Доп. параметр Confluence 1",
+            "Confluence_username": "Confluence Username",
             "Confluence_param9": "Доп. параметр Confluence 2",
             "reflex_transfer_url": "Reflex Transfer URL",
         }

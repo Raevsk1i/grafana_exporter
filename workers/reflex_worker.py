@@ -1,3 +1,5 @@
+import time
+
 from PyQt6.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal
 
 
@@ -13,6 +15,7 @@ class ReflexWorker(QRunnable):
     @pyqtSlot()
     def run(self):
         try:
+            time.sleep(5)
             response = self.func(*self.args, **self.kwargs)
             self.signals.success.emit(self.action_name, response)
         except Exception as e:

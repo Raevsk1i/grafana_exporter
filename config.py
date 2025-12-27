@@ -22,7 +22,7 @@ class ConfigManager(QObject):
             "Grafana_param5": "",
             "Confluence_url": "https://your-company.atlassian.net",
             "Confluence_api_key": "",
-            "Confluence_param8": "",
+            "Confluence_username": "",
             "Confluence_param9": "",
             "reflex_transfer_url": "https://api.example.com/reflex-transfer",
         }

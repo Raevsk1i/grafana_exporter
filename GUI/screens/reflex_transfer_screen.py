@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QThreadPool, QDateTime
+from PyQt6.QtCore import Qt, QThreadPool, QDateTime, QTimer
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QWidget, QPushButton, QMessageBox, QGridLayout, \
     QInputDialog, QLineEdit, QDialogButtonBox, QTextEdit, QDialog, QFormLayout, QDateTimeEdit
@@ -80,6 +80,12 @@ class ReflexTransferScreen(QWidget):
         self.threadpool = QThreadPool()
         self.buttons = {}
 
+        self.dot_count = 0  # Текущее количество точек
+        self.loading_timer = QTimer(self)
+        self.loading_timer.timeout.connect(self.update_loading_dots)
+
+        self.current_action_name = ""  # Запоминаем название действия для анимации
+
         self.build_ui()
 
         if not config.reflex_transfer_url.strip():
@@ -98,9 +104,15 @@ class ReflexTransferScreen(QWidget):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(title)
 
+        # Статусная строка
+        self.status_label = QLabel("Выберите действие")
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setStyleSheet("color: #bbbbbb; font-size: 14pt;")
+        main_layout.addWidget(self.status_label)
+
         # === Группа REFLEX ===
         reflex_group = QLabel("<b>REFLEX</b>")
-        reflex_group.setStyleSheet("font-size: 16pt; color: #9333ea;")
+        reflex_group.setStyleSheet("font-size: 16pt; color: #ffffff;")
         reflex_group.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(reflex_group)
 
@@ -131,7 +143,7 @@ class ReflexTransferScreen(QWidget):
 
         # === Группа INFLUX ===
         influx_group = QLabel("<b>INFLUX</b>")
-        influx_group.setStyleSheet("font-size: 16pt; color: #9333ea;")
+        influx_group.setStyleSheet("font-size: 16pt; color: #ffffff;")
         influx_group.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(influx_group)
 
@@ -174,6 +186,7 @@ class ReflexTransferScreen(QWidget):
         main_layout.addSpacing(20)
 
     def prompt_for_url(self):
+        self.loading_timer.stop()  # На всякий случай
         self.disable_action_buttons()
         self.status_label.setText("<span style='color: #ff6b6b;'>URL не указан. Введите его:</span>")
 
@@ -201,9 +214,19 @@ class ReflexTransferScreen(QWidget):
         for btn in self.buttons.values():
             btn.setEnabled(False)
 
+    def update_loading_dots(self):
+        self.dot_count = (self.dot_count + 1) % 4  # 0, 1, 2, 3 → "", ".", "..", "..."
+        dots = "." * self.dot_count
+        self.status_label.setText(f"Выполняется: {self.current_action_name}{dots}")
+
     def run_action(self, func, action_name: str, *args, **kwargs):
         self.disable_action_buttons()
-        self.status_label.setText(f"Выполняется: {action_name}...")
+
+        # Запоминаем действие и запускаем анимацию точек
+        self.current_action_name = action_name
+        self.dot_count = 0
+        self.status_label.setText(f"Выполняется: {action_name}")
+        self.loading_timer.start(400)  # Обновляем каждые 400 мс
 
         worker = ReflexWorker(func, action_name, *args, **kwargs)
         worker.signals.success.connect(self.on_success)
@@ -211,6 +234,7 @@ class ReflexTransferScreen(QWidget):
         self.threadpool.start(worker)
 
     def on_success(self, action_name: str, response: dict):
+        self.loading_timer.stop()  # Останавливаем точки
         self.enable_action_buttons()
         self.status_label.setText("Выберите действие")
 
@@ -223,6 +247,7 @@ class ReflexTransferScreen(QWidget):
             )
 
     def on_error(self, action_name: str, error_msg: str):
+        self.loading_timer.stop()  # Останавливаем точки
         self.enable_action_buttons()
         self.status_label.setText("Выберите действие")
         QMessageBox.critical(self, "Ошибка", f"<b>{action_name}</b><br><br>{error_msg}")
