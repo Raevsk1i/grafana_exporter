@@ -69,7 +69,7 @@ class AnimatedToggle(QCheckBox):
         self._handle_position = 0.0
         self._animation = QPropertyAnimation(self, b"handle_position", self)
         self._animation.setDuration(self._animation_duration)
-        self._animation.setEasingCurve(self._easing_type)  # теперь правильный тип!
+        self._animation.setEasingCurve(self._easing_type)
 
         self.stateChanged.connect(self.start_transition)
 

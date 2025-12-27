@@ -46,7 +46,7 @@ QComboBox::drop-down {
 }
 
 QComboBox::down-arrow {
-    image: url(:/icons/down-arrow-white.png); /* опционально: белая стрелка */
+    image: url(:/resources/props/Arrow-down.png); /* опционально: белая стрелка */
     width: 12px;
     height: 12px;
 }
@@ -70,7 +70,7 @@ QCheckBox::indicator {
 
 QCheckBox::indicator:checked {
     background-color: #9333ea;
-    image: url(:/icons/check-white.png); /* опционально: галочка */
+    image: url(:resources/props/Arrow-down.png); /* опционально: галочка */
     border-color: #9333ea;
 }
 

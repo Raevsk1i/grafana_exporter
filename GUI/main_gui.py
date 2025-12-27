@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
 
         # Параметр 7: Пространство Confluence
         self.space_edit = QLineEdit()
-        self.space_edit.setPlaceholderText("SBERERP")
+        self.space_edit.setPlaceholderText("SBERERP_TESTING")
         form_layout.addRow("Пространство Confluence:", self.space_edit)
 
         # Параметр 8: Parent Page ID
