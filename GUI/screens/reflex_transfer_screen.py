@@ -68,9 +68,16 @@ class TransferFromToDialog(QDialog):
 
     def get_values(self):
         fp_code = self.fp_code_edit.text().strip()
-        from_str = self.from_dt.dateTime().toString("dd.MM.yyyy HH:mm")
-        to_str = self.to_dt.dateTime().toString("dd.MM.yyyy HH:mm")
-        return fp_code, from_str, to_str
+
+        # Получаем QDateTime из виджетов
+        from_qdt = self.from_dt.dateTime()
+        to_qdt = self.to_dt.dateTime()
+
+        # Преобразуем в Unix timestamp в миллисекундах (UTC!)
+        from_ms = int(from_qdt.toMSecsSinceEpoch())
+        to_ms = int(to_qdt.toMSecsSinceEpoch())
+
+        return fp_code, from_ms, to_ms
 
 # Screen с кнопками для взаимодействия с приложением reflex-transfer
 class ReflexTransferScreen(QWidget):
@@ -121,8 +128,9 @@ class ReflexTransferScreen(QWidget):
         reflex_grid.setSpacing(15)
 
         reflex_buttons = [
-            ("Создать трансфер", self.create_transfer_action),
-            ("Трансфер From-To", self.transfer_from_to_action),
+            ("Создать трансфер", self.create_regular_transfer_action),
+            ("Трансфер From-To", self.create_transfer_from_to_action),
+            ("Удалить трансфер", self.stop_regular_transfer_action),
             ("Получить все активные трансферы", self.get_all_transfers_action),
         ]
 
@@ -152,7 +160,7 @@ class ReflexTransferScreen(QWidget):
         influx_grid.setSpacing(15)
 
         influx_buttons = [
-            ("Удалить инстансы ФП", self.delete_instances_action),
+            # ("Удалить инстансы ФП", self.delete_instances_action), # Требуется добавить эту функцию в reflex-transfer
             ("Пересоздать базу данных", self.recreate_db_action),
         ]
 
@@ -225,7 +233,7 @@ class ReflexTransferScreen(QWidget):
         self.status_label.setText(f"Выполняется: {self.current_action_name}{dots}")
 
     # Запускает основную логику и делит на поток
-    def run_action(self, func, action_name: str, *args, **kwargs):
+    def run_action(self, func, action_name: str, *args):
         self.disable_action_buttons()
 
         # Запоминаем действие и запускаем анимацию точек
@@ -234,7 +242,7 @@ class ReflexTransferScreen(QWidget):
         self.status_label.setText(f"Выполняется: {action_name}")
         self.loading_timer.start(400)  # Обновляем каждые 400 мс
 
-        worker = ReflexWorker(func, action_name, *args, **kwargs)
+        worker = ReflexWorker(func, action_name, *args)
         worker.signals.success.connect(self.on_success)
         worker.signals.error.connect(self.on_error)
         self.threadpool.start(worker)
@@ -261,43 +269,57 @@ class ReflexTransferScreen(QWidget):
         QMessageBox.critical(self, "Ошибка", f"<b>{action_name}</b><br><br>{error_msg}")
 
     # === Методы сервиса reflex_transfer_service === Требуется изменить для правильной работы
-    def create_transfer_action(self):
+    def create_regular_transfer_action(self):
         fp_code, ok = QInputDialog.getText(self, "Создать трансфер", "Введите КОД ФП:")
         if ok and fp_code.strip():
-            self.run_action(reflex_service.send_custom_event, "Создать трансфер", "create_transfer", {"fp_code": fp_code.strip()})
+            self.run_action(reflex_service.send_create_transfer_request,
+                            "Создать трансфер",
+                            fp_code)
         elif ok:
             QMessageBox.warning(self, "Ошибка", "Код ФП обязателен")
 
-    def transfer_from_to_action(self):
+    def create_transfer_from_to_action(self):
         dialog = TransferFromToDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            fp_code, from_str, to_str = dialog.get_values()
+            fp_code, from_ms, to_ms = dialog.get_values()
             if not fp_code:
                 QMessageBox.warning(self, "Ошибка", "Код ФП обязателен")
                 return
             self.run_action(
-                reflex_service.send_custom_event,
+                reflex_service.send_start_transfer_from_to_request,
                 "Трансфер From-To",
-                "transfer_period",
-                {"fp_code": fp_code, "from": from_str, "to": to_str}
+                fp_code, from_ms, to_ms
             )
 
+    def stop_regular_transfer_action(self):
+        fp_code, ok = QInputDialog.getText(self, "Остановить трансфер", "Введите КОД ФП:")
+        if ok and fp_code.strip():
+            self.run_action(reflex_service.send_stop_transfer_request,
+                            "Остановить трансфер",
+                            fp_code)
+        elif ok:
+            QMessageBox.warning(self, "Ошибка", "Код ФП обязателен")
+
     def get_all_transfers_action(self):
-        self.run_action(reflex_service.send_custom_event, "Получить все активные трансферы", "get_active_transfers", {})
+        self.run_action(reflex_service.send_get_transfers_request,
+                        "Получить все активные трансферы")
 
     def delete_instances_action(self):
         fp_code, ok = QInputDialog.getText(self, "Удалить инстансы ФП", "Введите КОД ФП:")
         if ok and fp_code.strip():
             reply = QMessageBox.question(self, "Подтверждение", f"Удалить инстансы для {fp_code}?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             if reply == QMessageBox.StandardButton.Yes:
-                self.run_action(reflex_service.send_custom_event, "Удалить инстансы ФП", "delete_instances", {"fp_code": fp_code.strip()})
+                self.run_action(reflex_service.send_delete_instance_request,
+                                "Удалить инстансы ФП",
+                                fp_code)
         elif ok:
             QMessageBox.warning(self, "Ошибка", "Код ФП обязателен")
 
     def recreate_db_action(self):
         reply = QMessageBox.question(self, "Подтверждение", "Пересоздать базу данных?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.Yes:
-            self.run_action(reflex_service.send_custom_event, "Пересоздать базу данных", "recreate_database", {})
+            self.run_action(reflex_service.send_recreate_database_request,
+                            "Пересоздать базу данных")
 
     # Возврат на главное меню
     def go_back(self):

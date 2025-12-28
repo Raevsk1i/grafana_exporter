@@ -26,7 +26,7 @@ class ProcessingWorker(QRunnable):
             for key, value in self.params.items():
                 print(f"  {key}: {value}")
 
-            # Имитация работы с прогрессом (замените на реальную логику)
+            # Имитация работы с прогрессом (заменить на реальную логику)
 
             time.sleep(0.8)
             progress = int(14)

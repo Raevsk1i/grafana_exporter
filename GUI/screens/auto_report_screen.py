@@ -151,12 +151,6 @@ class AutoReportScreen(QWidget):
             "background_music": self.music_checkbox.isChecked()
         }
 
-    def update_progress(self, value: int):
-        self.progress_animation.stop()
-        self.progress_animation.setStartValue(self.progress_bar.value())
-        self.progress_animation.setEndValue(value)
-        self.progress_animation.start()
-
     def on_run_clicked(self):
         params = self.get_parameters()
 
@@ -194,3 +188,9 @@ class AutoReportScreen(QWidget):
         self.run_button.setEnabled(True)
         self.run_button.setText("Запустить")
         QMessageBox.critical(self, "Ошибка", f"Произошла ошибка:\n{trace}")
+
+    def update_progress(self, value: int):
+        self.progress_animation.stop()
+        self.progress_animation.setStartValue(self.progress_bar.value())
+        self.progress_animation.setEndValue(value)
+        self.progress_animation.start()
