@@ -1,12 +1,13 @@
 # service/confluence_table_service.py
 
 import re
-from dataclasses import dataclass
-from typing import List, Dict, Optional
 import pandas as pd
 
+from dataclasses import dataclass
+from typing import List, Dict, Optional
 from bs4 import BeautifulSoup
 from atlassian import Confluence
+from utils.confluence_utils import *
 
 @dataclass(frozen=True)
 class TableColumn:
@@ -18,7 +19,7 @@ class TableColumn:
 class ParsedTable:
     headers: List[str]
     rows: List[List[str]]
-    raw_html: str
+    raw_html: str = ""
 
     def to_list_of_dicts(self) -> List[Dict[str, str]]:
         return [dict(zip(self.headers, row)) for row in self.rows]
@@ -92,7 +93,7 @@ class ConfluenceTableService:
         Получает таблицы со страницы по ее ID, саму таблицу ищет по ее индексу
         Если таблица не найдена, возвращает None
         """
-        html = self._get_page_storage_content(page_id)
+        html = self._get_page_storage_content_by_id(page_id)
         tables = self._parse_all_tables(html)
         return tables[index] if index < len(tables) else None
 
@@ -108,7 +109,7 @@ class ConfluenceTableService:
         Если таблица по заголовкам не найдена, возвращается None
         """
 
-        html = self._get_page_storage_content(page_id)
+        html = self._get_page_storage_content_by_id(page_id)
         tables = self._parse_all_tables(html)
 
         flag = re.IGNORECASE if not case_sensitive else 0
@@ -135,7 +136,10 @@ class ConfluenceTableService:
         Если таблица по ключевым словам не найдена, возвращается None
         """
 
-        html = self._get_page_storage_content(page_id)
+        if not search_value.strip():
+            return None
+
+        html = self._get_page_storage_content_by_id(page_id)
         tables = self._parse_all_tables(html)
 
         flag = re.IGNORECASE if not case_sensitive else 0
@@ -151,24 +155,24 @@ class ConfluenceTableService:
                         return table
         return None
 
-    def get_filtered_rows(
+    def get_filtered_rows_with_first_column_namespace(
             self,
             page_id: str,
             namespace: str,
             namespace_column_index: int = 0,
-            start_row: int = 1,
+            start_row: int = 0,  # Изменено с 1 на 0!
     ) -> List[List[str]]:
         """
-        Вырезает строки из таблицы на странице, найденной по ID, в которых содержится $namespace и возвращает LIST строк
-        Если строки в таблице по $namespace не были найдены, возвращает пустой массив
+        Вырезает строки из таблицы на странице, найденной по ID,
+        в которых содержится $namespace и возвращает LIST строк без колонки namespace.
+        Если строки не найдены — возвращает пустой список.
         """
-
         table = self.get_table_by_row_content(page_id, namespace.upper(), column_index=namespace_column_index)
         if not table:
             return []
 
         filtered = []
-        for row in table.rows[start_row:]:
+        for row in table.rows[start_row:]:  # start_row=0 по умолчанию — все данные
             if len(row) > namespace_column_index and namespace.upper() in row[namespace_column_index].upper():
                 filtered.append(row[1:])  # пропускаем колонку с namespace
         return filtered
@@ -192,3 +196,67 @@ class ConfluenceTableService:
             table = self.get_table_by_index(page_id, 0)
 
         return table.to_dataframe() if table else None
+
+    def convert_table_to_html(
+            self,
+            table: ParsedTable,
+            include_styles: bool = True,
+            table_class: str = "confluence-table",
+    ) -> str:
+        """
+        Преобразует объект ParsedTable в валидный HTML-код таблицы,
+        который можно напрямую вставить в HTML-документ.
+
+        Аргументы:
+            table: ParsedTable — распаршенная таблица
+            include_styles: bool — добавлять ли встроенные CSS-стили для красивого отображения
+            table_class: str — класс для <table>, полезно для последующей стилизации
+
+        Возвращает:
+            str — полный HTML-код таблицы
+        """
+        if not table.headers and not table.rows:
+            return "<!-- Пустая таблица -->"
+
+        html_parts = []
+
+        if include_styles:
+            html_parts.append(
+                '<style>'
+                'table.confluence-table { border-collapse: collapse; width: 100%; margin: 20px 0; font-family: Arial, sans-serif; }'
+                'table.confluence-table th, table.confluence-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }'
+                'table.confluence-table th { background-color: #f4f5f7; font-weight: bold; }'
+                'table.confluence-table tr:nth-child(even) { background-color: #f9f9f9; }'
+                'table.confluence-table tr:hover { background-color: #f1f1f1; }'
+                '</style>'
+            )
+
+        html_parts.append(f'<table class="{table_class}">')
+
+        # Заголовок таблицы, если есть
+        if table.headers:
+            html_parts.append('<thead>')
+            html_parts.append('<tr>')
+            for header in table.headers:
+                html_parts.append(f'<th>{escape_html(header)}</th>')
+            html_parts.append('</tr>')
+            html_parts.append('</thead>')
+
+        # Тело таблицы
+        html_parts.append('<tbody>')
+        for row in table.rows:
+            html_parts.append('<tr>')
+            # Количество ячеек в строке может отличаться от количества заголовков
+            for cell in row:
+                html_parts.append(f'<td>{escape_html(cell)}</td>')
+            # Если в строке меньше ячеек — дополняем пустыми <td>
+            if table.headers and len(row) < len(table.headers):
+                for _ in range(len(table.headers) - len(row)):
+                    html_parts.append('<td></td>')
+            html_parts.append('</tr>')
+        html_parts.append('</tbody>')
+
+        html_parts.append('</table>')
+
+        return '\n'.join(html_parts)
+

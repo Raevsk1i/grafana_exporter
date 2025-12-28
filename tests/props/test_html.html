@@ -1,0 +1,179 @@
+<html>
+<head><title>Confluence Page Example: Technical Documentation</title></head>
+<body>
+    <h1 id="main-header">Project Overview</h1>
+    <p>This is a sample Confluence page with various tables for testing parsing.</p>
+
+    <h2>Table 1: Team Members (with TH headers)</h2>
+    <div class="table-wrap">
+        <table class="confluenceTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Experience (years)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Doe</td>
+                    <td>Developer</td>
+                    <td>john@example.com</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Jane Smith</td>
+                    <td>Designer</td>
+                    <td>jane@example.com</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td>Bob Johnson</td>
+                    <td>Manager</td>
+                    <td>bob@example.com</td>
+                    <td>10</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <ul>
+        <li>Note: This table uses standard Confluence styling.</li>
+    </ul>
+
+    <h2>Table 2: Budget Breakdown (headers from first TD row)</h2>
+    <table class="wrapped relative-table confluenceTable" style="width: 80%;">
+        <tbody>
+            <tr>
+                <td>Category</td>
+                <td>Allocated ($)</td>
+                <td>Spent ($)</td>
+                <td>Remaining ($)</td>
+            </tr>
+            <tr>
+                <td>Hardware</td>
+                <td>5000</td>
+                <td>3000</td>
+                <td>2000</td>
+            </tr>
+            <tr>
+                <td>Software</td>
+                <td>2000</td>
+                <td>1500</td>
+                <td>500</td>
+            </tr>
+            <tr>
+                <td>Personnel</td>
+                <td>10000</td>
+                <td>7000</td>
+                <td>3000</td>
+            </tr>
+            <tr>
+                <td>Misc</td>
+                <td>1000</td>
+                <td>200</td>
+                <td>800</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Additional info: Budget updated as of Q4 2025.</p>
+
+    <h2>Table 3: Namespace and Functions (for filtered rows testing)</h2>
+    <table class="confluenceTable">
+        <tr>
+            <th>Namespace</th>
+            <th>Function Name</th>
+            <th>Description</th>
+            <th>Parameters</th>
+        </tr>
+        <tr>
+            <td>std</td>
+            <td>cout</td>
+            <td>Standard output stream</td>
+            <td>value</td>
+        </tr>
+        <tr>
+            <td>STD::io</td>
+            <td>printf</td>
+            <td>Formatted print</td>
+            <td>format, args</td>
+        </tr>
+        <tr>
+            <td>my::utils</td>
+            <td>log_error</td>
+            <td>Logs an error message</td>
+            <td>message</td>
+        </tr>
+        <tr>
+            <td>std</td>
+            <td>vector</td>
+            <td>Dynamic array</td>
+            <td>size</td>
+        </tr>
+        <tr>
+            <td>global</td>
+            <td>init</td>
+            <td>Initialization function</td>
+            <td>none</td>
+        </tr>
+    </table>
+
+    <h2>Table 4: Empty Table (should be skipped)</h2>
+    <table class="confluenceTable"></table>
+
+    <h2>Table 5: User Permissions (with some complexity: bold text, links)</h2>
+    <table class="confluenceTable">
+        <tr>
+            <th>User ID</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Access Level</th>
+        </tr>
+        <tr>
+            <td>001</td>
+            <td><b>admin</b></td>
+            <td>Administrator</td>
+            <td>Full <a href="/access">access</a></td>
+        </tr>
+        <tr>
+            <td>002</td>
+            <td>user1</td>
+            <td>Viewer</td>
+            <td>Read-only</td>
+        </tr>
+        <tr>
+            <td>003</td>
+            <td>editor</td>
+            <td>Editor</td>
+            <td>Edit pages</td>
+        </tr>
+    </table>
+
+    <h2>Table 6: Additional Table with Rowspan (parser will flatten it)</h2>
+    <table class="confluenceTable">
+        <tr>
+            <th>Category</th>
+            <th>Subcategory</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td rowspan="2">Fruits</td>
+            <td>Apple</td>
+            <td>Red</td>
+        </tr>
+        <tr>
+            <td>Banana</td>
+            <td>Yellow</td>
+        </tr>
+        <tr>
+            <td>Vegetables</td>
+            <td>Carrot</td>
+            <td>Orange</td>
+        </tr>
+    </table>
+
+    <p>End of page content.</p>
+</body>
+</html>
