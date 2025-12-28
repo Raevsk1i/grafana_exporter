@@ -1,40 +1,32 @@
-# ./service/confluence_service.py
-from pathlib import Path
+# service/confluence_service.py
 from atlassian import Confluence
 from config import config
-
-import logging
 import urllib3
 
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 class ConfluenceService:
+    """Единая точка создания и хранения Confluence клиента."""
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
+        if self._initialized:
+            return
         self.confluence = Confluence(
             url=config.get_value('Confluence_url'),
             username=config.get_value('Confluence_username'),
-            token=config.get_value('Confluence_api_key'),
+            password=config.get_value('Confluence_api_key'),  # или token=
             verify_ssl=False
         )
+        self._initialized = True
 
-    def _load_template(self, test_name) -> str:
-        path = f'./resources/test_templates/{test_name}.txt'
-        if not Path(path).exists():
-            raise FileNotFoundError(f"Шаблон по пути: \"{path}\" не найден")
-
-        with open(path, "r", encoding="utf-8") as template:
-            return template.read()
-
-    def _create_page(self, space, title, body):
-            page = self.confluence.create_page(space, title, body)
-            logger.info(f"{page}")
-
-    # def _upload_attachments(self, attachments: ):
-
-
-
-
-
+    def get_client(self):
+        return self.confluence
