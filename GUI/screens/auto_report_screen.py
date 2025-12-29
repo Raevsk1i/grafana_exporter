@@ -143,6 +143,7 @@ class AutoReportScreen(QWidget):
             "fp_code": self.fp_combo.currentText(),
             "page_id": self.page_id_edit.text().strip(),
             "page_name": self.page_name_edit.text().strip(),
+            "test_name": self.test_name.currentText().strip(),
             "from_dt": self.from_datetime.dateTime().toString("dd.MM.yyyy HH:mm"),
             "to_dt": self.to_datetime.dateTime().toString("dd.MM.yyyy HH:mm"),
             "space": self.space_edit.text().strip(),

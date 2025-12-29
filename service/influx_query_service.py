@@ -12,13 +12,13 @@ logging.basicConfig(level=logging.INFO)
 class InfluxQueryService:
     """Service for querying InfluxDB."""
 
-    def __init__(self, config_manager: config.ConfigManager):
+    def __init__(self, config_manager):
         self.client = InfluxDBClient(
             config_manager.get_value('Influxdb_url'),
             config_manager.get_value('Influxdb_port'),
             config_manager.get_value('Influxdb_username'),
             config_manager.get_value('Influxdb_password'),
-            'system_metrics'
+            config_manager.get_value('Influxdb_database')
         )
 
     def get_containers(self, namespace: str) -> List[str]:

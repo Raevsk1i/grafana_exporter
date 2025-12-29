@@ -7,7 +7,6 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 from typing import Dict, List
-from config import config
 from utils.grafana_url_builder import build_grafana_url
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 class GrafanaScreenshotService:
     """Service for fetching and saving Grafana screenshots."""
 
-    def __init__(self, config_manager: config.ConfigManager):
+    def __init__(self, config_manager):
         self.max_workers = int(config_manager.get_value('Grafana_max_workers', '10'))
         self.request_delay = float(config_manager.get_value('Grafana_request_delay', '0.5'))
         self.max_retries = int(config_manager.get_value('Grafana_max_retries', '3'))

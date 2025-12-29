@@ -95,7 +95,7 @@ class ReflexTransferScreen(QWidget):
 
         self.build_ui()
 
-        if not config.reflex_transfer_url.strip():
+        if not config.get_value('reflex_transfer_url').strip():
             self.prompt_for_url()
         else:
             self.enable_action_buttons()
@@ -202,7 +202,7 @@ class ReflexTransferScreen(QWidget):
 
         url, ok = QInputDialog.getText(
             self, "Настройка", "Базовый URL Reflex Transfer API:",
-            QLineEdit.EchoMode.Normal, config.reflex_transfer_url.strip() or "https://"
+            QLineEdit.EchoMode.Normal, config.get_value('reflex_transfer_url').strip() or "https://"
         )
 
         if ok and url.strip():

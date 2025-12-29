@@ -1,4 +1,5 @@
 # workers/worker.py
+import time
 
 from PyQt6.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
 import traceback
@@ -43,8 +44,17 @@ class ProcessingWorker(QRunnable):
             append_mode = self.params.get('append_mode')
             test_name = self.params.get('test_name')  # From GUI
 
+            template_test = ''
+            print(test_name)
+            if test_name == 'Поиск максимума':
+                template_test = 'maxperf'
+            elif test_name == 'Подтверждение максимума':
+                template_test = 'confirm_maxperf'
+            elif test_name == 'Стабильность':
+                template_test = 'stability'
+
             # Derive template_path from test_name (assumed mapping)
-            template_path = f"./tests/{test_name.replace(' ', '_').lower()}.html"  # e.g., "poisk_maksimuma.html"
+            template_path = f"./resources/test_templates/{template_test}.txt"
 
             # Step 0: Determine/create page_id
             if append_mode:

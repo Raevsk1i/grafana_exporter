@@ -18,13 +18,23 @@ class ConfigManager(QObject):
             "Grafana_host": "http://localhost",
             "Grafana_port": "3000",
             "Grafana_api_token": "",
-            "Grafana_dashboard": "default-dashboard",
+            "Grafana_dashboard_uid": "default-dashboard",
             "Grafana_param5": "",
             "Confluence_url": "https://your-company.atlassian.net",
             "Confluence_api_token": "",
             "Confluence_username": "",
             "Confluence_param9": "",
-            "reflex_transfer_url": "https://api.example.com/reflex-transfer",
+            "reflex_transfer_url": "https://reflex_transfer_api.god",
+
+            "Grafana_max_workers": "10",
+            "Grafana_request_delay": "0.5",
+            "Grafana_max_retries": "3",
+            "Grafana_dashboard_slug": "Dashboard-evg",
+            "Influxdb_url": "",
+            "Influxdb_port": "8086",
+            "Influxdb_username": "",
+            "Influxdb_password": "",
+            "Influxdb_database": "system_metrics",
         }
 
         # Загружаем значения из QSettings или используем дефолтные

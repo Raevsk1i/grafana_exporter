@@ -1,7 +1,7 @@
 # utils/grafana_url_builder.py
 
 import urllib.parse
-from parse_utils import parse_date
+from utils.parse_utils import parse_date
 from config import config  # Inject config for dynamic params
 
 def build_grafana_url(namespace: str, panel_id: int, container: str, start_time: str, end_time: str, base_url: str) -> str:

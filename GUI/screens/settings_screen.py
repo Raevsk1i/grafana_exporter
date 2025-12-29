@@ -1,13 +1,14 @@
 # GUI/screens/settings_screen.py
+
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QLineEdit,
-    QPushButton, QHBoxLayout, QFormLayout, QMessageBox
+    QPushButton, QHBoxLayout, QFormLayout, QMessageBox,
+    QSpacerItem, QSizePolicy
 )
 from PyQt6.QtCore import Qt
-from config import config  # Импортируем глобальный config
+from config import config
 
 
-# Окно с настройками констант, которые шарятся на все приложение
 class SettingsScreen(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -23,46 +24,63 @@ class SettingsScreen(QWidget):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
-        # Список параметров-констант названиями
-        self.param_fields = {
+        # Две колонки
+        columns_layout = QHBoxLayout()
+        columns_layout.setSpacing(40)
+
+        # Левая колонка
+        left_form = QFormLayout()
+        left_form.setHorizontalSpacing(20)
+        left_form.setVerticalSpacing(16)
+        left_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+
+        # Правая колонка
+        right_form = QFormLayout()
+        right_form.setHorizontalSpacing(20)
+        right_form.setVerticalSpacing(16)
+        right_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+
+        left_params = {
             "Grafana_host": "Grafana Host",
             "Grafana_port": "Grafana Port",
             "Grafana_api_token": "Grafana API Token",
-            "Grafana_dashboard": "Grafana Dashboard UID",
-            "Grafana_param5": "Доп. параметр Grafana",
-            "Confluence_url": "Confluence URL",
-            "Confluence_api_token": "Confluence API Token",
-            "Confluence_username": "Confluence Username",
-            "Confluence_param9": "Доп. параметр Confluence 2",
+            "Grafana_dashboard_uid": "Grafana Dashboard UID",
+            "Grafana_dashboard_slug": "Grafana Dashboard Slug",
+            "Grafana_max_workers": "Grafana Max Workers",
+            "Grafana_request_delay": "Grafana Request Delay (сек)",
+            "Grafana_max_retries": "Grafana Max Retries",
             "reflex_transfer_url": "Reflex Transfer URL",
         }
 
-        form_layout = QFormLayout()
-        form_layout.setHorizontalSpacing(20)
-        form_layout.setVerticalSpacing(16)
+        right_params = {
+            "Confluence_url": "Confluence URL",
+            "Confluence_api_token": "Confluence API Token",
+            "Confluence_username": "Confluence Username",
+            "Influxdb_url": "InfluxDB URL",
+            "Influxdb_port": "InfluxDB Port",
+            "Influxdb_username": "InfluxDB Username",
+            "Influxdb_password": "InfluxDB Password",
+            "Influxdb_database": "InfluxDB Database",
+        }
 
-        self.edit_widgets = {}  # Для сброса
+        self.edit_widgets = {}
 
-        for key, label_text in self.param_fields.items():
-            label = QLabel(f"{label_text}:")
-            edit = QLineEdit()
-            edit.setPlaceholderText(f"Введите {label_text.lower()}")
+        # Заполняем левую колонку
+        for key, label_text in left_params.items():
+            self._add_field(left_form, key, label_text)
 
-            # Загружаем текущее значение из config
-            current_value = config.get_value(key, "")
-            edit.setText(current_value)
+        # Заполняем правую колонку
+        for key, label_text in right_params.items():
+            is_password = key == "Influxdb_password"
+            self._add_field(right_form, key, label_text, is_password=is_password)
 
-            # При изменении — сохраняем в config
-            edit.textChanged.connect(
-                lambda text, k=key: config.set_value(k, text)
-            )
+        columns_layout.addLayout(left_form)
+        columns_layout.addLayout(right_form)
+        columns_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
-            form_layout.addRow(label, edit)
-            self.edit_widgets[key] = edit
+        layout.addLayout(columns_layout)
 
-        layout.addLayout(form_layout)
-
-        # Кнопка сброса: Сбрасывает все параметры
+        # Кнопка сброса
         reset_button = QPushButton("Сбросить все настройки")
         reset_button.setObjectName("resetButton")
         reset_button.clicked.connect(self.reset_all_settings)
@@ -83,16 +101,43 @@ class SettingsScreen(QWidget):
         layout.addLayout(bottom_bar)
         layout.addSpacing(20)
 
+    def _add_field(self, form_layout: QFormLayout, key: str, label_text: str, is_password: bool = False):
+        """Добавляет поле с переносом текста в метке и фиксированной шириной поля ввода"""
+        label = QLabel(f"{label_text}:")
+        label.setWordWrap(True)                    # Ключевое: перенос текста
+        label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+        label.setMinimumWidth(180)                 # Ограничиваем ширину метки
+        label.setMaximumWidth(220)
+
+        edit = QLineEdit()
+        if is_password:
+            edit.setEchoMode(QLineEdit.EchoMode.Password)
+
+        edit.setPlaceholderText(f"Введите {label_text.lower()}")
+        edit.setMinimumWidth(250)                  # Достаточная ширина поля ввода
+        edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+        # Загружаем значение из config
+        current_value = config.get_value(key, "")
+        edit.setText(current_value)
+
+        # Сохраняем при изменении
+        edit.textChanged.connect(lambda text, k=key: config.set_value(k, text))
+
+        # Добавляем в форму: метка может занимать несколько строк, поле — справа
+        form_layout.addRow(label, edit)
+        self.edit_widgets[key] = edit
+
     def reset_all_settings(self):
         reply = QMessageBox.question(
-            self, "Подтверждение",
+            self,
+            "Подтверждение",
             "Сбросить все настройки до значений по умолчанию?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            # Сбрасываем в config (он сам сохранит в QSettings)
-            for key in self.param_fields.keys():
+            for key in self.edit_widgets:
                 default = config.defaults.get(key, "")
                 config.set_value(key, default)
                 self.edit_widgets[key].setText(default)
