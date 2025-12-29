@@ -23,7 +23,7 @@ class ReflexTransferService:
     """
 
     def __init__(self):
-        self.base_url = config.reflex_transfer_url.strip().rstrip("/vat-stubs/api/v1")
+        self.base_url = config.get_value('reflex_transfer_url').strip().rstrip('/reflex-stubs/api/v1')
 
         # Общие заголовки (можно расширить)
         self.headers = {
@@ -83,7 +83,7 @@ class ReflexTransferService:
 
         try:
             response = request(
-                method="POST",
+                method="GET",
                 url=url,
                 headers=self.headers,
                 timeout=timeout,
