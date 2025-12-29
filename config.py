@@ -17,11 +17,11 @@ class ConfigManager(QObject):
         self.defaults = {
             "Grafana_host": "http://localhost",
             "Grafana_port": "3000",
-            "Grafana_api_key": "",
+            "Grafana_api_token": "",
             "Grafana_dashboard": "default-dashboard",
             "Grafana_param5": "",
             "Confluence_url": "https://your-company.atlassian.net",
-            "Confluence_api_key": "",
+            "Confluence_api_token": "",
             "Confluence_username": "",
             "Confluence_param9": "",
             "reflex_transfer_url": "https://api.example.com/reflex-transfer",

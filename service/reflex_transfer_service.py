@@ -1,4 +1,5 @@
 # service/reflex_transfer_service.py
+import json
 
 import requests
 import logging
@@ -6,6 +7,7 @@ import urllib3
 
 from typing import Dict, Any
 from config import config
+from requests import request
 
 # Настройка логирования
 logger = logging.getLogger(__name__)
@@ -21,7 +23,7 @@ class ReflexTransferService:
     """
 
     def __init__(self):
-        self.base_url = config.reflex_transfer_url.strip().rstrip("/vat-stubs/api/v1/")
+        self.base_url = config.reflex_transfer_url.strip().rstrip("/vat-stubs/api/v1")
 
         # Общие заголовки (можно расширить)
         self.headers = {
@@ -29,7 +31,7 @@ class ReflexTransferService:
             "Accept": "application/json"
         }
 
-    def _post(self, endpoint: str, json_data: Dict[str, Any] = None, timeout: int = 30) -> Dict[str, Any]:
+    def _post(self, endpoint: str, json_data: Dict[str, Any] = None, timeout: int = 30) -> dict[str, str] | None | Any:
         """
         Внутренний метод для отправки POST-запроса
         """
@@ -38,11 +40,17 @@ class ReflexTransferService:
         logger.info(f"Payload: {json_data}")
 
         try:
-            response = requests.post(
+            data = json.dumps(json_data)
+
+            response = request(
+                method="POST",
                 url=url,
-                json=json_data,
+                data=data,
                 headers=self.headers,
-                timeout=timeout
+                timeout=timeout,
+                verify=False,
+                cert=('./resources/certs/tls.crt',
+                      './resources/certs/tls.key')
             )
 
             if response.status_code in (200, 201):
@@ -66,7 +74,7 @@ class ReflexTransferService:
             raise
 
 
-    def _get(self, endpoint: str, timeout: int = 30) -> Dict[str, Any]:
+    def _get(self, endpoint: str, timeout: int = 30) -> dict[str, str] | None | Any:
         """
         Внутренний метод для отправки GET-запроса
         """
@@ -74,10 +82,14 @@ class ReflexTransferService:
         logger.info(f"Отправка GET запроса: {url}")
 
         try:
-            response = requests.get(
+            response = request(
+                method="POST",
                 url=url,
                 headers=self.headers,
-                timeout=timeout
+                timeout=timeout,
+                verify=False,
+                cert=('./resources/certs/tls.crt',
+                      './resources/certs/tls.key')
             )
 
             if response.status_code in (200, 201):

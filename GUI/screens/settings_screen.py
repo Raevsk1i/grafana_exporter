@@ -27,11 +27,11 @@ class SettingsScreen(QWidget):
         self.param_fields = {
             "Grafana_host": "Grafana Host",
             "Grafana_port": "Grafana Port",
-            "Grafana_api_key": "Grafana API Key",
+            "Grafana_api_token": "Grafana API Token",
             "Grafana_dashboard": "Grafana Dashboard UID",
             "Grafana_param5": "Доп. параметр Grafana",
             "Confluence_url": "Confluence URL",
-            "Confluence_api_key": "Confluence API Token",
+            "Confluence_api_token": "Confluence API Token",
             "Confluence_username": "Confluence Username",
             "Confluence_param9": "Доп. параметр Confluence 2",
             "reflex_transfer_url": "Reflex Transfer URL",
